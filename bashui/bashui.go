@@ -1,32 +1,61 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"log"
 	"mastermind/mastermind"
 	"os"
+	"strconv"
 )
 
 var game mastermind.Game
+var in *bufio.Reader
 
 func main() {
+	in = bufio.NewReader(os.Stdin)
 	game = mastermind.StartGame()
 
 	printGame()
 
 	for true {
-		game.MakeMove([]int{0, 1, 2, 3, 4, 5})
-		err := game.MakeMove([]int{4, 5, 6, 7, 8, 9})
-		if err != nil {
-			log.Fatal(err)
+		move, err := readMove()
+		if err == nil {
+			err = game.MakeMove(move)
+			if err != nil {
+				log.Fatal(err)
+			}
+		} else {
+			log.Print(err)
 		}
 
 		printGame()
 	}
 }
 
+func readMove() ([]int, error) {
+	line, err := in.ReadString('\n')
+	if err != nil {
+		log.Fatal("could not read input", err)
+	}
+	if len(line)-1 != game.GetMoveSize() {
+		return nil, errors.New("line is not same size as word size")
+	}
+	move := make([]int, game.GetMoveSize())
+	for i := 0; i < game.GetMoveSize(); i++ {
+		move[i], err = strconv.Atoi(line[i : i+1])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return move, nil
+}
+
 func printGame() {
 	printHeader()
-	for _, move := range game.GetMoves() {
+	moves := game.GetMoves()
+	for i := len(moves) - 1; i >= 0; i-- {
+		move := moves[i]
 		if move != nil {
 			for _, guess := range move {
 				p(" ")
