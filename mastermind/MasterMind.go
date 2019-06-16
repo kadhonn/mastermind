@@ -24,51 +24,51 @@ type Points interface {
 }
 
 type PointsData struct {
-	black int
-	white int
+	Black int
+	White int
 }
 
 type GameData struct {
-	moveSize   int
-	colorCount int
-	moves      [][]int
-	secret     []int
-	points     []Points
+	MoveSize   int
+	ColorCount int
+	Moves      [][]int
+	Secret     []int
+	Points     []Points
 }
 
 func (game *GameData) GetMoves() [][]int {
-	return game.moves
+	return game.Moves
 }
 
 func (game *GameData) GetSecret() []int {
-	return game.secret
+	return game.Secret
 }
 
 func (game *GameData) GetMoveSize() int {
-	return game.moveSize
+	return game.MoveSize
 }
 
 func (game *GameData) GetColorCount() int {
-	return game.colorCount
+	return game.ColorCount
 }
 
 func (points *PointsData) GetBlack() int {
-	return points.black
+	return points.Black
 }
 
 func (points *PointsData) GetWhite() int {
-	return points.white
+	return points.White
 }
 
 func (game *GameData) MakeMove(move []int) error {
 	if move == nil {
 		return errors.New("move cannot be nil")
 	}
-	if len(move) != game.moveSize {
-		return errors.New(fmt.Sprintf("move is size %d but move size is %d", len(move), game.moveSize))
+	if len(move) != game.MoveSize {
+		return errors.New(fmt.Sprintf("move is size %d but move size is %d", len(move), game.MoveSize))
 	}
 	for index, element := range move {
-		if element < 0 || element >= game.colorCount {
+		if element < 0 || element >= game.ColorCount {
 			return errors.New(fmt.Sprintf("color at index %d is invalid: %d", index, element))
 		}
 	}
@@ -78,8 +78,8 @@ func (game *GameData) MakeMove(move []int) error {
 		return err
 	}
 
-	game.moves[lastMoveIndex] = move
-	game.points[lastMoveIndex] = calcPoints(game.secret, move)
+	game.Moves[lastMoveIndex] = move
+	game.Points[lastMoveIndex] = calcPoints(game.Secret, move)
 
 	return nil
 }
@@ -90,15 +90,15 @@ func calcPoints(origsecret []int, origmove []int) Points {
 	move := make([]int, len(origmove))
 	copy(move, origmove)
 	points := PointsData{
-		black: 0,
-		white: 0,
+		Black: 0,
+		White: 0,
 	}
 
 	for i := 0; i < len(secret); i++ {
 		if secret[i] == move[i] {
 			secret[i] = -1
 			move[i] = -1
-			points.black++
+			points.Black++
 		}
 	}
 
@@ -107,7 +107,7 @@ func calcPoints(origsecret []int, origmove []int) Points {
 			for secretI, color := range secret {
 				if color == guess {
 					secret[secretI] = -1
-					points.white++
+					points.White++
 					break
 				}
 			}
@@ -117,33 +117,33 @@ func calcPoints(origsecret []int, origmove []int) Points {
 }
 
 func (game *GameData) GetPoints() []Points {
-	return game.points
+	return game.Points
 }
 
 func (game *GameData) HasWon() bool {
 	index, err := findNextIndex(game)
 	if err != nil {
-		index = len(game.moves)
+		index = len(game.Moves)
 	}
 	index--
 	if index < 0 {
 		return false
 	}
-	return game.points[index].GetBlack() == game.moveSize
+	return game.Points[index].GetBlack() == game.MoveSize
 }
 
 func (game *GameData) HasLost() bool {
 	if game.HasWon() {
 		return false
 	}
-	if game.moves[len(game.moves)-1] != nil {
+	if game.Moves[len(game.Moves)-1] != nil {
 		return true
 	}
 	return false
 }
 
 func findNextIndex(data *GameData) (int, error) {
-	for index, element := range data.moves {
+	for index, element := range data.Moves {
 		if element == nil {
 			return index, nil
 		}
@@ -156,15 +156,15 @@ func StartGame() Game {
 	colorCount := 10
 	moveCount := 15
 	return &GameData{
-		moveSize:   moveSize,
-		colorCount: colorCount,
-		moves:      make([][]int, moveCount),
-		secret:     getSecret(moveSize, colorCount),
-		points:     make([]Points, moveCount),
+		MoveSize:   moveSize,
+		ColorCount: colorCount,
+		Moves:      make([][]int, moveCount),
+		Secret:     getSecret(moveSize, colorCount),
+		Points:     make([]Points, moveCount),
 	}
 }
 
-var s1 = rand.NewSource(time.Now().UnixNano())
+var s1 = rand.NewSource(time.Now().UnixNano() - 100)
 var r1 = rand.New(s1)
 
 func getSecret(moveSize int, colors int) []int {

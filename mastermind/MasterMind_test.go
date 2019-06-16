@@ -84,7 +84,7 @@ func TestMakeValidMove(t *testing.T) {
 
 func TestWinning(t *testing.T) {
 	game := createTestGame()
-	game.secret = []int{1, 1}
+	game.Secret = []int{1, 1}
 
 	if game.HasWon() {
 		t.Fatal("should not have won the game")
@@ -115,7 +115,7 @@ func TestWinning(t *testing.T) {
 
 func TestLosing(t *testing.T) {
 	game := createTestGame()
-	game.secret = []int{1, 1}
+	game.Secret = []int{1, 1}
 
 	if game.HasLost() {
 		t.Fatal("should not have lost the game")
@@ -166,7 +166,7 @@ func TestAllWhite(t *testing.T) {
 
 func testCounting(t *testing.T, secret []int, move []int, blacks int, whites int) {
 	game := createTestGame()
-	game.secret = secret
+	game.Secret = secret
 
 	err := game.MakeMove(move)
 	if err != nil {
@@ -185,10 +185,10 @@ func testCounting(t *testing.T, secret []int, move []int, blacks int, whites int
 
 func createTestGame() *GameData {
 	return &GameData{
-		moveSize:   2,
-		colorCount: 4,
-		moves:      make([][]int, 2),
-		points:     make([]Points, 2),
-		secret:     []int{1, 1},
+		MoveSize:   2,
+		ColorCount: 4,
+		Moves:      make([][]int, 2),
+		Points:     make([]Points, 2),
+		Secret:     []int{1, 1},
 	}
 }
