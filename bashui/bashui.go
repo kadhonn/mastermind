@@ -30,6 +30,17 @@ func main() {
 		}
 
 		printGame()
+
+		if game.HasWon() {
+			red()
+			p("YOU WON!")
+			os.Exit(0)
+		}
+		if game.HasLost() {
+			red()
+			p("YOU LOOOSE!")
+			os.Exit(0)
+		}
 	}
 }
 
@@ -60,6 +71,16 @@ func printGame() {
 			for _, guess := range move {
 				p(" ")
 				color(guess)
+				p("*")
+			}
+			white()
+			p(" | ")
+			red()
+			for j := 0; j < game.GetPoints()[i].GetBlack(); j++ {
+				p("*")
+			}
+			white()
+			for j := 0; j < game.GetPoints()[i].GetWhite(); j++ {
 				p("*")
 			}
 			p("\n")
@@ -151,5 +172,5 @@ func red() {
 }
 
 func p(s string) {
-	os.Stdout.WriteString(s)
+	_, _ = os.Stdout.WriteString(s)
 }

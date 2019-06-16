@@ -3,6 +3,8 @@ package mastermind
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"time"
 )
 
 type Game interface {
@@ -11,6 +13,19 @@ type Game interface {
 	GetMoves() [][]int
 	GetSecret() []int
 	MakeMove(move []int) error
+	GetPoints() []Points
+	HasWon() bool
+	HasLost() bool
+}
+
+type Points interface {
+	GetBlack() int
+	GetWhite() int
+}
+
+type PointsData struct {
+	black int
+	white int
 }
 
 type GameData struct {
@@ -18,6 +33,7 @@ type GameData struct {
 	colorCount int
 	moves      [][]int
 	secret     []int
+	points     []Points
 }
 
 func (game *GameData) GetMoves() [][]int {
@@ -34,6 +50,14 @@ func (game *GameData) GetMoveSize() int {
 
 func (game *GameData) GetColorCount() int {
 	return game.colorCount
+}
+
+func (points *PointsData) GetBlack() int {
+	return points.black
+}
+
+func (points *PointsData) GetWhite() int {
+	return points.white
 }
 
 func (game *GameData) MakeMove(move []int) error {
@@ -55,8 +79,67 @@ func (game *GameData) MakeMove(move []int) error {
 	}
 
 	game.moves[lastMoveIndex] = move
+	game.points[lastMoveIndex] = calcPoints(game.secret, move)
 
 	return nil
+}
+
+func calcPoints(origsecret []int, origmove []int) Points {
+	secret := make([]int, len(origsecret))
+	copy(secret, origsecret)
+	move := make([]int, len(origmove))
+	copy(move, origmove)
+	points := PointsData{
+		black: 0,
+		white: 0,
+	}
+
+	for i := 0; i < len(secret); i++ {
+		if secret[i] == move[i] {
+			secret[i] = -1
+			move[i] = -1
+			points.black++
+		}
+	}
+
+	for _, guess := range move {
+		if guess != -1 {
+			for secretI, color := range secret {
+				if color == guess {
+					secret[secretI] = -1
+					points.white++
+					break
+				}
+			}
+		}
+	}
+	return &points
+}
+
+func (game *GameData) GetPoints() []Points {
+	return game.points
+}
+
+func (game *GameData) HasWon() bool {
+	index, err := findNextIndex(game)
+	if err != nil {
+		index = len(game.moves)
+	}
+	index--
+	if index < 0 {
+		return false
+	}
+	return game.points[index].GetBlack() == game.moveSize
+}
+
+func (game *GameData) HasLost() bool {
+	if game.HasWon() {
+		return false
+	}
+	if game.moves[len(game.moves)-1] != nil {
+		return true
+	}
+	return false
 }
 
 func findNextIndex(data *GameData) (int, error) {
@@ -69,9 +152,25 @@ func findNextIndex(data *GameData) (int, error) {
 }
 
 func StartGame() Game {
+	moveSize := 6
+	colorCount := 10
+	moveCount := 15
 	return &GameData{
-		moveSize:   6,
-		colorCount: 10,
-		moves:      make([][]int, 15),
+		moveSize:   moveSize,
+		colorCount: colorCount,
+		moves:      make([][]int, moveCount),
+		secret:     getSecret(moveSize, colorCount),
+		points:     make([]Points, moveCount),
 	}
+}
+
+var s1 = rand.NewSource(time.Now().UnixNano())
+var r1 = rand.New(s1)
+
+func getSecret(moveSize int, colors int) []int {
+	secret := make([]int, moveSize)
+	for index := range secret {
+		secret[index] = r1.Intn(colors)
+	}
+	return secret
 }
