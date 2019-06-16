@@ -3,6 +3,7 @@ package ai
 import (
 	"mastermind/mastermind"
 	"os"
+	"strconv"
 )
 
 func PrintGame(game mastermind.Game) {
@@ -11,21 +12,11 @@ func PrintGame(game mastermind.Game) {
 	for i := len(moves) - 1; i >= 0; i-- {
 		move := moves[i]
 		if move != nil {
-			for _, guess := range move {
-				P(" ")
-				color(guess)
-				P("*")
-			}
+			printMove(move)
 			White()
 			P(" | ")
-			Red()
-			for j := 0; j < game.GetPoints()[i].GetBlack(); j++ {
-				P("*")
-			}
-			White()
-			for j := 0; j < game.GetPoints()[i].GetWhite(); j++ {
-				P("*")
-			}
+			PrintBlacks(game.GetPoints()[i].GetBlack())
+			PrintWhites(game.GetPoints()[i].GetWhite())
 			P("\n")
 		}
 	}
@@ -37,16 +28,47 @@ func printFooter(game mastermind.Game) {
 }
 
 func printHeader(game mastermind.Game) {
-	White()
-	for i := 0; i < game.GetMoveSize(); i++ {
-		P(" *")
+	if game.HasLost() || game.HasWon() {
+		printMove(game.GetSecret())
+	} else {
+		White()
+		for i := 0; i < game.GetMoveSize(); i++ {
+			P(" *")
+		}
 	}
+	White()
 	P("\n")
 	for i := 0; i < game.GetMoveSize(); i++ {
 		P("--")
 	}
 	P("-")
 	P("\n")
+}
+
+func printMove(move []int) {
+	for _, guess := range move {
+		P(" ")
+		printGuess(guess)
+	}
+}
+
+func printGuess(guess int) {
+	color(guess)
+	P(strconv.Itoa(guess))
+}
+
+func PrintWhites(whites int) {
+	White()
+	for j := 0; j < whites; j++ {
+		P("*")
+	}
+}
+
+func PrintBlacks(blacks int) {
+	Red()
+	for j := 0; j < blacks; j++ {
+		P("*")
+	}
 }
 
 func color(guess int) {
