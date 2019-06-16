@@ -7,9 +7,10 @@ import (
 	"time"
 )
 
-type evaluator func(mastermind.Game) []int
+type EvaluatorCreator func() Evaluator
+type Evaluator func(mastermind.Game) []int
 
-type gameCreator func() mastermind.Game
+type GameCreator func() mastermind.Game
 
 type Statistics struct {
 	won   int
@@ -19,21 +20,21 @@ type Statistics struct {
 var s1 = rand.NewSource(time.Now().UnixNano())
 var r1 = rand.New(s1)
 
-func StartEvaluationWithTime(eval evaluator, n_games int, every_n_games int) Statistics {
+func StartEvaluationWithTime(eval EvaluatorCreator, n_games int, every_n_games int) Statistics {
 	return startEvaluationWithTime(eval, mastermind.StartGame, n_games, every_n_games)
 }
 
-func startEvaluationWithCreator(eval evaluator, creator gameCreator) Statistics {
+func startEvaluationWithCreator(eval EvaluatorCreator, creator GameCreator) Statistics {
 	return startEvaluationWithTime(eval, creator, 100, 10)
 }
 
-func startEvaluationWithTime(eval evaluator, creator gameCreator, n_games int, every_n_games int) Statistics {
+func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCreator, n_games int, every_n_games int) Statistics {
 	statistics := Statistics{0, 0}
 
 	for i := 0; i < n_games; i++ {
 		game := creator()
 
-		evalOneGame(eval, game)
+		evalOneGame(evaluatorCreator(), game)
 		PrintGame(game)
 
 		if game.HasWon() {
@@ -49,7 +50,7 @@ func startEvaluationWithTime(eval evaluator, creator gameCreator, n_games int, e
 	return statistics
 }
 
-func evalOneGame(e evaluator, game mastermind.Game) {
+func evalOneGame(e Evaluator, game mastermind.Game) {
 	for !game.HasWon() && !game.HasLost() {
 		err := game.MakeMove(e(game))
 		if err != nil {

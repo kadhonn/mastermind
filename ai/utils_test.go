@@ -16,7 +16,7 @@ func TestStartEvaluationEverytimeRight(t *testing.T) {
 		return []int{0, 1}
 	}
 
-	statistics := startEvaluationWithCreator(solver, creator)
+	statistics := startEvaluationWithCreator(func() Evaluator { return solver }, creator)
 
 	if statistics.total != statistics.won {
 		t.Fatal("should have won all games!")
@@ -34,7 +34,7 @@ func TestStartEvaluationEverytimeWrong(t *testing.T) {
 		return []int{0, 2}
 	}
 
-	statistics := startEvaluationWithCreator(solver, creator)
+	statistics := startEvaluationWithCreator(func() Evaluator { return solver }, creator)
 
 	if statistics.won != 0 {
 		t.Fatal("should have lost all games!")
