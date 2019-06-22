@@ -3,40 +3,27 @@ package main
 import (
 	"fmt"
 	"github.com/kadhonn/mastermind/ai"
+	"github.com/kadhonn/mastermind/ai_evo"
 	"github.com/kadhonn/mastermind/mastermind"
+	"log"
 )
 
 func main() {
 	//run(func() ai.Evaluator { return ai.CompleteRandom }, 10, 100000)
-	run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 100, 10)
-	//run(prefixes(
-	//	[][]int{
-	//		{1, 1, 1, 2, 2, 2},
-	//		{3, 3, 3, 4, 4, 4},
-	//		{5, 5, 5, 6, 6, 6},
-	//		{7, 7, 7, 8, 8, 8},
-	//		{9, 9, 9, 0, 0, 0},
-	//	},
-	//	ai.RandomWithSafeGuard), 100, 10)
-	//run(prefixes(
-	//	[][]int{
-	//		{1, 1, 2, 2, 3, 3},
-	//		{4, 4, 5, 5, 6, 6},
-	//		{8, 8, 9, 9, 0, 0},
-	//	},
-	//	ai.RandomWithSafeGuard), 100, 10)
-	//run(prefixes(
-	//	[][]int{
-	//		{1, 2, 3, 4, 5, 6},
-	//		{7, 8, 9, 0, 5, 6},
-	//	},
-	//	ai.RandomWithSafeGuard), 100, 10)
+	//run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 100, 10)
+
+	for true {
+		run(ai_evo.EvoEval(ai_evo.CreateRandomDNA(6, 10, 1000)), 100, 1000)
+	}
 
 }
 
 func run(evaluatorCreator ai.EvaluatorCreator, times int, everyNTimes int) {
 	statistics := ai.StartEvaluationWithTime(evaluatorCreator, times, everyNTimes)
-	fmt.Printf("Won: %d Total: %d Avg Rounds: %2.1f", statistics.Won, statistics.Total, getAvg(statistics.Rounds))
+	if statistics.Won != 0 {
+		fmt.Printf("Won: %d Total: %d Avg Rounds: %2.1f\n", statistics.Won, statistics.Total, getAvg(statistics.Rounds))
+		log.Fatal("woaaah")
+	}
 }
 
 func getAvg(rounds []int) float64 {

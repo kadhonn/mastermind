@@ -4,6 +4,8 @@ import (
 	"github.com/kadhonn/mastermind/ai"
 	"github.com/kadhonn/mastermind/mastermind"
 	"log"
+	"math/rand"
+	"time"
 )
 
 type Field struct {
@@ -30,14 +32,16 @@ type DNA struct {
 	nucl []interface{}
 }
 
-func EvoEval(dna DNA) ai.Evaluator {
-	return func(game mastermind.Game) []int {
-		return doEvoEval(game, dna)
+func EvoEval(dna DNA) ai.EvaluatorCreator {
+	return func() ai.Evaluator {
+		return func(game mastermind.Game) []int {
+			return doEvoEval(game, dna)
+		}
 	}
 }
 
 func doEvoEval(game mastermind.Game, dna DNA) []int {
-	fields := make([]int, game.GetColorCount()*game.GetMoveSize()*2)
+	fields := make([]int, getFieldsSize(game.GetColorCount(), game.GetMoveSize()))
 	for i := range fields {
 		fields[i] = -1
 	}
@@ -62,6 +66,10 @@ func doEvoEval(game mastermind.Game, dna DNA) []int {
 		}
 	}
 	return result
+}
+
+func getFieldsSize(colorCount int, moveSize int) int {
+	return colorCount * moveSize * 2
 }
 
 func evalMove(dna DNA, fields []int) {
@@ -111,4 +119,76 @@ func evalColorCompare(compare ColorCompare, fields []int) int {
 		return compare.skip + 1
 	}
 	return 1
+}
+
+type DNACreationSizes struct {
+	colorCount int
+	moveSize   int
+	fieldsSize int
+	dnaSize    int
+}
+
+func CreateRandomDNA(colorCount int, moveSize int, size int) DNA {
+	sizes := DNACreationSizes{
+		colorCount: colorCount,
+		moveSize:   moveSize,
+		fieldsSize: getFieldsSize(colorCount, moveSize),
+		dnaSize:    size,
+	}
+	nucl := make([]interface{}, size)
+
+	for i := range nucl {
+		nucl[i] = createRandomNucl(sizes)
+	}
+
+	return DNA{nucl: nucl}
+}
+
+var s1 = rand.NewSource(time.Now().UnixNano() + 1245)
+var r1 = rand.New(s1)
+
+func createRandomNucl(sizes DNACreationSizes) interface{} {
+	switch r1.Intn(3) {
+	case 0, 1:
+		return createRandomAction(sizes)
+	case 2:
+		return createRandomColorCompare(sizes)
+	}
+	log.Fatal("fuck me")
+	return nil
+}
+
+func createRandomColorCompare(sizes DNACreationSizes) ColorCompare {
+	return ColorCompare{
+		skip:   r1.Intn(sizes.dnaSize),
+		equals: r1.Intn(2) == 0,
+		first:  createRandomColor(sizes),
+		second: createRandomColor(sizes),
+	}
+}
+
+func createRandomAction(sizes DNACreationSizes) Action {
+	return Action{
+		field: createRandomField(sizes),
+		color: createRandomColor(sizes),
+	}
+}
+
+func createRandomColor(sizes DNACreationSizes) interface{} {
+	switch r1.Intn(2) {
+	case 0:
+		return createRandomField(sizes)
+	case 1:
+		return createRandomFixedColor(sizes)
+	}
+	log.Fatal("fuck me")
+	return nil
+}
+
+func createRandomFixedColor(sizes DNACreationSizes) FixedColor {
+	return FixedColor{r1.Intn(sizes.colorCount+1) - 1}
+}
+
+func createRandomField(sizes DNACreationSizes) Field {
+	return Field{r1.Intn(sizes.fieldsSize)}
 }
