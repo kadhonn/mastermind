@@ -160,7 +160,7 @@ func createRandomNucl(sizes DNACreationSizes) interface{} {
 
 func createRandomColorCompare(sizes DNACreationSizes) ColorCompare {
 	return ColorCompare{
-		skip:   r1.Intn(sizes.dnaSize),
+		skip:   r1.Intn(10),
 		equals: r1.Intn(2) == 0,
 		first:  createRandomColor(sizes),
 		second: createRandomColor(sizes),

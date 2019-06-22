@@ -41,7 +41,7 @@ func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCrea
 			statistics.Won++
 			PrintGame(game)
 		} else {
-			//PrintGame(game)
+			PrintGame(game)
 		}
 		statistics.Total++
 		statistics.Rounds[i] = getRounds(game)
