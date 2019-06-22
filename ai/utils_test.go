@@ -61,7 +61,7 @@ func TestIsGuessCompatible(t *testing.T) {
 	if !isGuessCompatible([]int{0, 1}, &mastermind.PointsData{Black: 1, White: 0}, []int{2, 1}) {
 		t.Error("should be compatible!")
 	}
-	if !isGuessCompatible([]int{0, 1, 2}, &mastermind.PointsData{Black: 1, White: 1}, []int{0, 2, 2}) {
+	if !isGuessCompatible([]int{0, 1, 2}, &mastermind.PointsData{Black: 1, White: 1}, []int{0, 2, 0}) {
 		t.Error("should be compatible!")
 	}
 	if !isGuessCompatible([]int{0, 1, 2}, &mastermind.PointsData{Black: 1, White: 1}, []int{0, 2, 3}) {
@@ -123,6 +123,9 @@ func TestIsGuessCompatible(t *testing.T) {
 		t.Error("should NOT be compatible!")
 	}
 	if isGuessCompatible([]int{0, 0, 1, 2}, &mastermind.PointsData{Black: 0, White: 2}, []int{0, 0, 3, 4}) {
+		t.Error("should NOT be compatible!")
+	}
+	if isGuessCompatible([]int{4, 3, 6, 8, 4, 5}, &mastermind.PointsData{Black: 1, White: 1}, []int{6, 0, 6, 8, 6, 0}) {
 		t.Error("should NOT be compatible!")
 	}
 }

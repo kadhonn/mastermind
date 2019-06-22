@@ -39,6 +39,7 @@ func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCrea
 
 		if game.HasWon() {
 			statistics.Won++
+			PrintGame(game)
 		} else {
 			PrintGame(game)
 		}
@@ -99,33 +100,22 @@ func isGuessCompatible(origOldMove []int, p mastermind.Points, origMove []int) b
 		layout[index] = 0
 	}
 
-	return layoutBlacks(0, oldMove, &mastermind.PointsData{Black: p.GetBlack(), White: p.GetWhite()}, move)
+	return layoutBlacks(oldMove, &mastermind.PointsData{Black: p.GetBlack(), White: p.GetWhite()}, move)
 }
 
-//LAYOUT: 0 = clear, 1 = black, 2 = white
-func layoutBlacks(startIndex int, oldMove []int, p *mastermind.PointsData, move []int) bool {
-	if p.Black > 0 {
-		p.Black--
-		for i := startIndex; i < len(oldMove); i++ {
-			if oldMove[i] == move[i] {
-				guess := move[i]
-				move[i] = -1
-				oldMove[i] = -1
-
-				ret := layoutBlacks(i+1, oldMove, p, move)
-				if ret {
-					return true
-				}
-
-				move[i] = guess
-				oldMove[i] = guess
-			}
+func layoutBlacks(oldMove []int, p *mastermind.PointsData, move []int) bool {
+	blackCount := 0
+	for i := 0; i < len(oldMove); i++ {
+		if oldMove[i] == move[i] {
+			move[i] = -1
+			oldMove[i] = -1
+			blackCount++
 		}
-		p.Black++
-		return false
-	} else {
-		return layoutWhites(0, oldMove, p, move)
 	}
+	if p.Black != blackCount {
+		return false
+	}
+	return layoutWhites(0, oldMove, p, move)
 }
 
 func layoutWhites(startIndex int, oldMove []int, p *mastermind.PointsData, move []int) bool {

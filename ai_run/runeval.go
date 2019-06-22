@@ -3,33 +3,34 @@ package main
 import (
 	"fmt"
 	"github.com/kadhonn/mastermind/ai"
+	"github.com/kadhonn/mastermind/mastermind"
 )
 
 func main() {
-	//run(func() ai.Evaluator { return ai.CompleteRandom }, 10000000, 100000)
-	//run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 100, 10)
-	run(prefixes(
-		[][]int{
-			{1, 1, 1, 2, 2, 2},
-			{3, 3, 3, 4, 4, 4},
-			{5, 5, 5, 6, 6, 6},
-			{7, 7, 7, 8, 8, 8},
-			{9, 9, 9, 0, 0, 0},
-		},
-		ai.RandomWithSafeGuard), 100, 10)
-	run(prefixes(
-		[][]int{
-			{1, 1, 2, 2, 3, 3},
-			{4, 4, 5, 5, 6, 6},
-			{8, 8, 9, 9, 0, 0},
-		},
-		ai.RandomWithSafeGuard), 100, 10)
-	run(prefixes(
-		[][]int{
-			{1, 2, 3, 4, 5, 6},
-			{7, 8, 9, 0, 5, 6},
-		},
-		ai.RandomWithSafeGuard), 100, 10)
+	//run(func() ai.Evaluator { return ai.CompleteRandom }, 10, 100000)
+	run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 10, 10)
+	//run(prefixes(
+	//	[][]int{
+	//		{1, 1, 1, 2, 2, 2},
+	//		{3, 3, 3, 4, 4, 4},
+	//		{5, 5, 5, 6, 6, 6},
+	//		{7, 7, 7, 8, 8, 8},
+	//		{9, 9, 9, 0, 0, 0},
+	//	},
+	//	ai.RandomWithSafeGuard), 100, 10)
+	//run(prefixes(
+	//	[][]int{
+	//		{1, 1, 2, 2, 3, 3},
+	//		{4, 4, 5, 5, 6, 6},
+	//		{8, 8, 9, 9, 0, 0},
+	//	},
+	//	ai.RandomWithSafeGuard), 100, 10)
+	//run(prefixes(
+	//	[][]int{
+	//		{1, 2, 3, 4, 5, 6},
+	//		{7, 8, 9, 0, 5, 6},
+	//	},
+	//	ai.RandomWithSafeGuard), 100, 10)
 
 }
 
