@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"errors"
+	"github.com/kadhonn/mastermind/ai"
+	"github.com/kadhonn/mastermind/mastermind"
 	"log"
-	"mastermind/ai"
-	"mastermind/mastermind"
 	"os"
 	"strconv"
 )

@@ -1,7 +1,7 @@
 package ai
 
 import (
-	"mastermind/mastermind"
+	"github.com/kadhonn/mastermind/mastermind"
 )
 
 func RandomWithSafeGuard(game mastermind.Game) []int {

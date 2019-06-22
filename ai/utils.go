@@ -1,8 +1,8 @@
 package ai
 
 import (
+	"github.com/kadhonn/mastermind/mastermind"
 	"log"
-	"mastermind/mastermind"
 	"math/rand"
 	"time"
 )

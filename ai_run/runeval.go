@@ -2,8 +2,7 @@ package main
 
 import (
 	"fmt"
-	"mastermind/ai"
-	"mastermind/mastermind"
+	"github.com/kadhonn/mastermind/ai"
 )
 
 func main() {
