@@ -8,7 +8,7 @@ import (
 
 func main() {
 	//run(func() ai.Evaluator { return ai.CompleteRandom }, 10, 100000)
-	run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 10, 10)
+	run(func() ai.Evaluator { return ai.RandomWithSafeGuard }, 100, 10)
 	//run(prefixes(
 	//	[][]int{
 	//		{1, 1, 1, 2, 2, 2},
