@@ -39,15 +39,15 @@ func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCrea
 
 		if game.HasWon() {
 			statistics.Won++
-			PrintGame(game)
+			//PrintGame(game)
 		} else {
 			//PrintGame(game)
 		}
 		statistics.Total++
 		statistics.Games[i] = game
 
-		if i%every_n_games == 0 && i != 0 {
-			log.Printf("%d/%d = %3.2f%%", i, n_games, float32(i)/float32(n_games)*100.0)
+		if (i+1)%every_n_games == 0 && i != 0 {
+			log.Printf("%d/%d = %3.2f%%", i+1, n_games, float32(i)/float32(n_games)*100.0)
 		}
 	}
 

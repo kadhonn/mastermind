@@ -6,6 +6,7 @@ import (
 	"github.com/kadhonn/mastermind/ai"
 	"github.com/kadhonn/mastermind/mastermind"
 	"log"
+	"math"
 	"math/rand"
 	"time"
 )
@@ -121,10 +122,6 @@ func evalPointsCompare(compare *PointsCompare, points mastermind.Points) int {
 		machted = count == compare.Count
 	case 1:
 		machted = count != compare.Count
-	case 2:
-		machted = count < compare.Count
-	case 3:
-		machted = count > compare.Count
 	default:
 		log.Fatal("wrong Mode", compare.Mode)
 	}
@@ -203,8 +200,8 @@ func createRandomNucl(sizes DNACreationSizes) interface{} {
 
 func createRandomPointsCompare(sizes DNACreationSizes) *PointsCompare {
 	return &PointsCompare{
-		Skip:   r1.Intn(50),
-		Mode:   r1.Intn(4),
+		Skip:   r1.Intn(getRandomSkip(sizes)),
+		Mode:   r1.Intn(2),
 		Blacks: r1.Intn(2) == 0,
 		Count:  r1.Intn(sizes.colorCount),
 	}
@@ -212,11 +209,15 @@ func createRandomPointsCompare(sizes DNACreationSizes) *PointsCompare {
 
 func createRandomColorCompare(sizes DNACreationSizes) *ColorCompare {
 	return &ColorCompare{
-		Skip:   r1.Intn(50),
+		Skip:   r1.Intn(getRandomSkip(sizes)),
 		Equals: r1.Intn(2) == 0,
 		First:  createRandomColor(sizes),
 		Second: createRandomColor(sizes),
 	}
+}
+
+func getRandomSkip(sizes DNACreationSizes) int {
+	return int(math.Sqrt(float64(sizes.fieldsSize)))
 }
 
 func createRandomAction(sizes DNACreationSizes) *Action {
