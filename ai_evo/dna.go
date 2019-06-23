@@ -1,6 +1,8 @@
 package ai_evo
 
 import (
+	"bytes"
+	"encoding/gob"
 	"github.com/kadhonn/mastermind/ai"
 	"github.com/kadhonn/mastermind/mastermind"
 	"log"
@@ -9,27 +11,34 @@ import (
 )
 
 type Field struct {
-	number int
+	Number int
 }
 
 type FixedColor struct {
-	color int
+	Color int
 }
 
 type ColorCompare struct {
-	skip   int
-	equals bool
-	first  interface{}
-	second interface{}
+	Skip   int
+	Equals bool
+	First  interface{}
+	Second interface{}
 }
 
 type Action struct {
-	field Field
-	color interface{}
+	Field *Field
+	Color interface{}
+}
+
+type PointsCompare struct {
+	Skip   int
+	Mode   int
+	Blacks bool
+	Count  int
 }
 
 type DNA struct {
-	nucl []interface{}
+	Nucl []interface{}
 }
 
 func EvoEval(dna DNA) ai.EvaluatorCreator {
@@ -46,15 +55,15 @@ func doEvoEval(game mastermind.Game, dna DNA) []int {
 		fields[i] = -1
 	}
 
-	evalMove(dna, fields)
-	for _, move := range game.GetMoves() {
+	evalMove(dna, fields, &mastermind.PointsData{0, 0})
+	for i, move := range game.GetMoves() {
 		if move == nil {
 			break
 		}
 		for i := range move {
 			fields[i+len(move)] = move[i]
 		}
-		evalMove(dna, fields)
+		evalMove(dna, fields, game.GetPoints()[i])
 	}
 
 	result := make([]int, game.GetMoveSize())
@@ -72,51 +81,83 @@ func getFieldsSize(colorCount int, moveSize int) int {
 	return colorCount * moveSize * 2
 }
 
-func evalMove(dna DNA, fields []int) {
+func evalMove(dna DNA, fields []int, points mastermind.Points) {
 	i := 0
 	forward := 0
-	for i = 0; i < len(dna.nucl); i += forward {
-		forward = evalNucl(dna.nucl[i], fields)
+	for i = 0; i < len(dna.Nucl); i += forward {
+		forward = evalNucl(dna.Nucl[i], fields, points)
 	}
 }
 
-func evalNucl(nucl interface{}, fields []int) int {
-	action, ok := nucl.(Action)
+func evalNucl(nucl interface{}, fields []int, points mastermind.Points) int {
+	action, ok := nucl.(*Action)
 	if ok {
 		evalAction(action, fields)
 		return 1
 	}
-	colorCompare, ok := nucl.(ColorCompare)
+	colorCompare, ok := nucl.(*ColorCompare)
 	if ok {
 		return evalColorCompare(colorCompare, fields)
+	}
+	pointsCompare, ok := nucl.(*PointsCompare)
+	if ok {
+		return evalPointsCompare(pointsCompare, points)
 	}
 	log.Fatal("unknown value", nucl)
 	return -1
 }
 
-func evalAction(action Action, fields []int) {
-	color := resolveColor(action.color, fields)
-	fields[action.field.number] = color
+func evalPointsCompare(compare *PointsCompare, points mastermind.Points) int {
+	var count int
+	if compare.Blacks {
+		count = points.GetBlack()
+	} else {
+		count = points.GetWhite()
+	}
+
+	var machted bool
+	switch compare.Mode {
+	case 0:
+		machted = count == compare.Count
+	case 1:
+		machted = count != compare.Count
+	case 2:
+		machted = count < compare.Count
+	case 3:
+		machted = count > compare.Count
+	default:
+		log.Fatal("wrong Mode", compare.Mode)
+	}
+	if machted {
+		return compare.Skip + 1
+	} else {
+		return 1
+	}
+}
+
+func evalAction(action *Action, fields []int) {
+	color := resolveColor(action.Color, fields)
+	fields[action.Field.Number] = color
 }
 
 func resolveColor(color interface{}, fields []int) int {
-	fixedColor, ok := color.(FixedColor)
+	fixedColor, ok := color.(*FixedColor)
 	if ok {
-		return fixedColor.color
+		return fixedColor.Color
 	}
-	field, ok := color.(Field)
+	field, ok := color.(*Field)
 	if ok {
-		return fields[field.number]
+		return fields[field.Number]
 	}
 	log.Fatal("unknown color", color)
 	return -1
 }
 
-func evalColorCompare(compare ColorCompare, fields []int) int {
-	firstColor := resolveColor(compare.first, fields)
-	secondColor := resolveColor(compare.second, fields)
-	if (compare.equals && firstColor == secondColor) || (!compare.equals && firstColor != secondColor) {
-		return compare.skip + 1
+func evalColorCompare(compare *ColorCompare, fields []int) int {
+	firstColor := resolveColor(compare.First, fields)
+	secondColor := resolveColor(compare.Second, fields)
+	if (compare.Equals && firstColor == secondColor) || (!compare.Equals && firstColor != secondColor) {
+		return compare.Skip + 1
 	}
 	return 1
 }
@@ -141,36 +182,47 @@ func CreateRandomDNA(colorCount int, moveSize int, size int) DNA {
 		nucl[i] = createRandomNucl(sizes)
 	}
 
-	return DNA{nucl: nucl}
+	return DNA{Nucl: nucl}
 }
 
 var s1 = rand.NewSource(time.Now().UnixNano() + 1245)
 var r1 = rand.New(s1)
 
 func createRandomNucl(sizes DNACreationSizes) interface{} {
-	switch r1.Intn(3) {
-	case 0, 1:
+	switch r1.Intn(5) {
+	case 0, 1, 2:
 		return createRandomAction(sizes)
-	case 2:
+	case 3:
 		return createRandomColorCompare(sizes)
+	case 4:
+		return createRandomPointsCompare(sizes)
 	}
 	log.Fatal("fuck me")
 	return nil
 }
 
-func createRandomColorCompare(sizes DNACreationSizes) ColorCompare {
-	return ColorCompare{
-		skip:   r1.Intn(10),
-		equals: r1.Intn(2) == 0,
-		first:  createRandomColor(sizes),
-		second: createRandomColor(sizes),
+func createRandomPointsCompare(sizes DNACreationSizes) *PointsCompare {
+	return &PointsCompare{
+		Skip:   r1.Intn(50),
+		Mode:   r1.Intn(4),
+		Blacks: r1.Intn(2) == 0,
+		Count:  r1.Intn(sizes.colorCount),
 	}
 }
 
-func createRandomAction(sizes DNACreationSizes) Action {
-	return Action{
-		field: createRandomField(sizes),
-		color: createRandomColor(sizes),
+func createRandomColorCompare(sizes DNACreationSizes) *ColorCompare {
+	return &ColorCompare{
+		Skip:   r1.Intn(50),
+		Equals: r1.Intn(2) == 0,
+		First:  createRandomColor(sizes),
+		Second: createRandomColor(sizes),
+	}
+}
+
+func createRandomAction(sizes DNACreationSizes) *Action {
+	return &Action{
+		Field: createRandomField(sizes),
+		Color: createRandomColor(sizes),
 	}
 }
 
@@ -185,10 +237,42 @@ func createRandomColor(sizes DNACreationSizes) interface{} {
 	return nil
 }
 
-func createRandomFixedColor(sizes DNACreationSizes) FixedColor {
-	return FixedColor{r1.Intn(sizes.colorCount+1) - 1}
+func createRandomFixedColor(sizes DNACreationSizes) *FixedColor {
+	return &FixedColor{r1.Intn(sizes.colorCount+1) - 1}
 }
 
-func createRandomField(sizes DNACreationSizes) Field {
-	return Field{r1.Intn(sizes.fieldsSize)}
+func createRandomField(sizes DNACreationSizes) *Field {
+	return &Field{r1.Intn(sizes.fieldsSize)}
+}
+
+func Save(dna DNA) *bytes.Buffer {
+	gob.Register(&Field{})
+	gob.Register(&ColorCompare{})
+	gob.Register(&PointsCompare{})
+	gob.Register(&Action{})
+	gob.Register(&FixedColor{})
+
+	buffer := &bytes.Buffer{}
+	enc := gob.NewEncoder(buffer)
+	err := enc.Encode(dna)
+	if err != nil {
+		log.Fatal("encode:", err)
+	}
+	return buffer
+}
+
+func Load(buffer *bytes.Buffer) DNA {
+	gob.Register(&Field{})
+	gob.Register(&ColorCompare{})
+	gob.Register(&PointsCompare{})
+	gob.Register(&Action{})
+	gob.Register(&FixedColor{})
+
+	dec := gob.NewDecoder(buffer)
+	var dna DNA
+	err := dec.Decode(&dna)
+	if err != nil {
+		log.Fatal("decode:", err)
+	}
+	return dna
 }

@@ -13,9 +13,9 @@ type Evaluator func(mastermind.Game) []int
 type GameCreator func() mastermind.Game
 
 type Statistics struct {
-	Won    int
-	Total  int
-	Rounds []int
+	Won   int
+	Total int
+	Games []mastermind.Game
 }
 
 var s1 = rand.NewSource(time.Now().UnixNano())
@@ -30,7 +30,7 @@ func startEvaluationWithCreator(eval EvaluatorCreator, creator GameCreator) Stat
 }
 
 func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCreator, n_games int, every_n_games int) Statistics {
-	statistics := Statistics{Won: 0, Total: 0, Rounds: make([]int, n_games)}
+	statistics := Statistics{Won: 0, Total: 0, Games: make([]mastermind.Game, n_games)}
 
 	for i := 0; i < n_games; i++ {
 		game := creator()
@@ -41,10 +41,10 @@ func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCrea
 			statistics.Won++
 			PrintGame(game)
 		} else {
-			PrintGame(game)
+			//PrintGame(game)
 		}
 		statistics.Total++
-		statistics.Rounds[i] = getRounds(game)
+		statistics.Games[i] = game
 
 		if i%every_n_games == 0 && i != 0 {
 			log.Printf("%d/%d = %3.2f%%", i, n_games, float32(i)/float32(n_games)*100.0)
@@ -52,15 +52,6 @@ func startEvaluationWithTime(evaluatorCreator EvaluatorCreator, creator GameCrea
 	}
 
 	return statistics
-}
-
-func getRounds(game mastermind.Game) int {
-	for i, move := range game.GetMoves() {
-		if move == nil {
-			return i
-		}
-	}
-	return len(game.GetMoves())
 }
 
 func evalOneGame(e Evaluator, game mastermind.Game) {
