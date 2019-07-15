@@ -83,10 +83,13 @@ func getFieldsSize(colorCount int, moveSize int) int {
 }
 
 func evalMove(dna DNA, fields []int, points mastermind.Points) {
-	i := 0
-	forward := 0
-	for i = 0; i < len(dna.Nucl); i += forward {
-		forward = evalNucl(dna.Nucl[i], fields, points)
+	pos := 0
+	for i := 0; i < 10000; i++ {
+		pos += evalNucl(dna.Nucl[pos], fields, points)
+		pos = pos % len(dna.Nucl)
+		if pos < 0 {
+			pos += len(dna.Nucl)
+		}
 	}
 }
 
@@ -200,7 +203,7 @@ func createRandomNucl(sizes DNACreationSizes) interface{} {
 
 func createRandomPointsCompare(sizes DNACreationSizes) *PointsCompare {
 	return &PointsCompare{
-		Skip:   r1.Intn(getRandomSkip(sizes)),
+		Skip:   getRandomSkip(sizes),
 		Mode:   r1.Intn(2),
 		Blacks: r1.Intn(2) == 0,
 		Count:  r1.Intn(sizes.colorCount),
@@ -209,7 +212,7 @@ func createRandomPointsCompare(sizes DNACreationSizes) *PointsCompare {
 
 func createRandomColorCompare(sizes DNACreationSizes) *ColorCompare {
 	return &ColorCompare{
-		Skip:   r1.Intn(getRandomSkip(sizes)),
+		Skip:   getRandomSkip(sizes),
 		Equals: r1.Intn(2) == 0,
 		First:  createRandomColor(sizes),
 		Second: createRandomColor(sizes),
@@ -217,7 +220,8 @@ func createRandomColorCompare(sizes DNACreationSizes) *ColorCompare {
 }
 
 func getRandomSkip(sizes DNACreationSizes) int {
-	return int(math.Sqrt(float64(sizes.fieldsSize)))
+	size := int(math.Sqrt(float64(sizes.fieldsSize)))
+	return r1.Intn(size*2) - size/2
 }
 
 func createRandomAction(sizes DNACreationSizes) *Action {

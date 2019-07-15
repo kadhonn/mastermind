@@ -154,7 +154,7 @@ func findNextIndex(data *GameData) (int, error) {
 func StartGame() Game {
 	moveSize := 6
 	colorCount := 10
-	moveCount := 15
+	moveCount := 1000
 	return &GameData{
 		MoveSize:   moveSize,
 		ColorCount: colorCount,

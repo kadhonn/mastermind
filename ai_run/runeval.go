@@ -47,10 +47,10 @@ func main() {
 func runEvo() {
 	i := 0
 	for true {
-		dna := ai_evo.CreateRandomDNA(10, 6, 100)
-		statistics := ai.StartEvaluationWithTime(ai_evo.EvoEval(dna), 100000, 999999)
+		dna := ai_evo.CreateRandomDNA(10, 6, 1000)
+		statistics := ai.StartEvaluationWithTime(ai_evo.EvoEval(dna), 1, 999999)
 
-		if statistics.Won >= 2 {
+		if statistics.Won >= 0 {
 			for j, game := range statistics.Games {
 				if game.HasWon() || j < 10 {
 					ai.PrintGame(game)
